@@ -1,0 +1,73 @@
+// 1.主题定义
+// 默认主题
+@import './theme_default.scss';
+@import './theme_2.scss';
+$theme-green: (
+  font-color-theme: #000000,
+  background: #00ff00,
+);
+
+$theme-blue: (
+  font-size: 0.16rem,
+  theme-default-background: #0000,
+  theme-default-color: #fff,
+  theme-class-info-background: #1A2468,
+);
+
+//  2.将定义好到主题添加到map中
+$themes:(
+  default:$theme-default,
+  theme_2:$theme_2,
+  blue:$theme-blue,
+);
+
+// 4. 调用混合指令themify() ,定义规则,此处到规则会替换@content
+@mixin mytheme{
+  @include themify() {
+    // 默认主页样式
+    .theme-default-background {
+      background: themed("theme-default-background");
+      color: themed("theme-default-color");
+    }
+    .theme-class-info-background {
+      background: themed("theme-class-info-background");
+    }
+
+
+
+    .test-theme {
+      background: themed("background");
+      color: themed("font-color");
+    }
+    .theme-fist-bg {
+      background: themed("background");
+    }
+    
+    .text-color {
+      color: themed("font-color-theme");
+    }
+  }
+};
+
+// 3.定义混合指令, 切换主题,并将主题中到所有规则添加到theme-map中
+@mixin themify() {
+  @each $theme-name, $map in $themes {
+    // & 表示父级元素
+    // !global 表示覆盖原来的
+    .theme-#{$theme-name} & {
+      $theme-map: () !global;
+      // 循环合并键值对
+      @each $key, $value in $map {
+        $theme-map: map-merge($theme-map, ($key: $value)) !global;
+      }
+      // 表示包含 下面函数 themed()
+      @content;
+      $theme-map: null !global;
+    }
+  }
+}
+
+// 通过key获取map中到值
+@function themed($key) {
+  @return map-get($theme-map, $key);
+}
